@@ -43,3 +43,7 @@ The only entitlements are `com.apple.security.app-sandbox`, the read-only Voice 
 - **Records it can't read stop the export.** If the folder's `.memo-export.json` is damaged or from a newer version, it stops rather than starting over and duplicating your memos. If the record goes missing, like when a sync service skips hidden files, notes already in the folder are recognized by the `voice-memo-id` in their front matter and kept as they are, not exported again.
 - **The command line tool isn't sandboxed,** since it runs as you in your terminal. It uses the same code as the app, so it reads Voice Memos the same way, through a copy, and writes only into the folder you give it. CI checks that only the export code writes files.
 - It has no dependencies. Every line that runs is in this repository.
+
+## The signature
+
+Releases are signed ad hoc, not with a paid Apple Developer ID. macOS ties the Full Disk Access you grant to that exact build, so no other program can borrow it by claiming to be Memo Export. The catch is that each update counts as a new app: after updating, turn Full Disk Access on again in System Settings → Privacy & Security → Full Disk Access. macOS may also ask whether the new version can use the old one's data; that's just its settings. A Developer ID signature, which would keep the permission across updates, is planned.

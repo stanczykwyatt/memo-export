@@ -32,17 +32,11 @@ if [[ -f Resources/AppIcon.icns ]]; then
 	cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
 fi
 
-# An ad-hoc signature's identity changes with every build, so macOS would treat each update as a
-# different app reaching into the last one's sandbox data. Naming the bundle ID as the designated
-# requirement keeps updates recognized as the same app. A Developer ID signature has its own.
-requirement=()
-if [[ "$identity" == "-" ]]; then
-	requirement=(--requirements '=designated => identifier "com.stanczykwyatt.MemoExport"')
-fi
-
+# Signed with the default requirement, which names this exact build. macOS ties Full Disk Access
+# to it, so no other program can claim the permission by reusing the bundle ID. The cost is that
+# each update has to be allowed again. A Developer ID signature would keep it across updates.
 codesign --force --options runtime --timestamp=none \
 	--entitlements Resources/MemoExport.entitlements \
-	${requirement[@]+"${requirement[@]}"} \
 	--sign "$identity" "$app"
 codesign --verify --strict "$app"
 

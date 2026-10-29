@@ -103,6 +103,8 @@ Files are named with the date first, so they sort in the order you recorded them
 
 > **About the security warning:** The first time you open Memo Export, macOS may say Apple couldn't verify that it's free of malware. It shows up because the app isn't notarized yet: Apple charges developers $99 a year for that, and this project hasn't paid the fee. The code is fully open source, so you can read every line or build the app yourself. To open it, go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
+> **After an update:** turn Full Disk Access on again for the new version in **System Settings → Privacy & Security → Full Disk Access**. macOS ties the permission to each exact build, which keeps any other program from borrowing it.
+
 > **Can't see the icon?** On a MacBook with a camera notch, menu bar icons that don't fit are hidden behind it. Hold ⌘ and drag the icon to the right, or quit a menu bar app you don't need.
 
 ### Build from source
