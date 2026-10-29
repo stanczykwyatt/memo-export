@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Memo Export: export Voice Memos transcripts to Markdown on Mac</title>
+  <meta name="description" content="Memo Export is a free, open-source Mac menu bar app that exports your Voice Memos transcripts as Markdown notes with timestamps, next to the audio. Obsidian-friendly, only new memos on each run, searchable, read-only and with no internet access.">
+  <meta name="keywords" content="export voice memos transcript mac, voice memos transcript to text, voice memos to obsidian, voice memos markdown, export voice memos mac, voice memos srt, search voice memos transcripts, menu bar app">
+  <link rel="canonical" href="https://stanczykwyatt.github.io/memo-export/">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="theme-color" content="#0d0f12">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Memo Export">
+  <meta property="og:title" content="Memo Export">
+  <meta property="og:description" content="Your Voice Memos transcripts, as Markdown with the audio. Timestamped paragraphs, only new memos on each run, Obsidian-friendly. Free, open source, read-only.">
+  <meta property="og:url" content="https://stanczykwyatt.github.io/memo-export/">
+  <meta property="og:image" content="https://stanczykwyatt.github.io/memo-export/social.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:image:alt" content="Memo Export: your Voice Memos transcripts, as Markdown with the audio.">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Memo Export",
+    "description": "A read-only Mac menu bar app that exports Voice Memos recordings as audio files and Markdown notes with their timestamped transcripts, adding only new memos on each run.",
+    "operatingSystem": "macOS 14 or later",
+    "applicationCategory": "ProductivityApplication",
+    "url": "https://stanczykwyatt.github.io/memo-export/",
+    "downloadUrl": "https://github.com/stanczykwyatt/memo-export/releases/latest/download/Memo-Export.zip",
+    "softwareVersion": "0.1.0",
+    "datePublished": "2026-11-04",
+    "dateModified": "2026-11-04",
+    "releaseNotes": "https://github.com/stanczykwyatt/memo-export/releases/tag/v0.1.0",
+    "featureList": [
+      "Exports every Voice Memos recording as its audio and a Markdown note",
+      "Transcripts in paragraphs with timestamps",
+      "Only new memos on each run, and notes you edit are never overwritten",
+      "Optional automatic export of new memos",
+      "Obsidian-friendly front matter, tags and audio embeds",
+      "Search what was said across every memo, and copy transcripts with their paragraphs",
+      "Optional SRT subtitles and a command line tool",
+      "Read-only, with no internet access, enforced by the macOS App Sandbox"
+    ],
+    "image": "https://stanczykwyatt.github.io/memo-export/icon.png",
+    "screenshot": "https://stanczykwyatt.github.io/memo-export/screenshot-dark.png",
+    "license": "https://opensource.org/licenses/MIT",
+    "isAccessibleForFree": true,
+    "author": { "@type": "Person", "name": "Wyatt Stanczyk", "url": "https://wyattstanczyk.com" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I export a transcript from Voice Memos on a Mac?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Voice Memos only lets you copy a transcript one memo at a time, without its line breaks. Memo Export exports all of them at once, each as a Markdown note in paragraphs with timestamps, next to the audio." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I export Voice Memos transcripts to Obsidian?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Choose a folder inside your vault. Each note has front matter Obsidian reads as properties, a voice-memo tag, and an embed that plays the audio inside the note." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Memo Export transcribe recordings itself?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. It exports the transcripts Voice Memos makes on your Mac, which needs macOS 14 Sonoma or later. A memo without one is still exported with its audio, and its note gets the words once Voice Memos has made them." }
+      },
+      {
+        "@type": "Question",
+        "name": "Will Memo Export change or delete my memos?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. The App Sandbox only lets it read Voice Memos' folder, and it reads a copy of the database rather than the database itself. It never deletes anything, and never overwrites a note you've edited." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does Memo Export need Full Disk Access?",
+        "acceptedAnswer": { "@type": "Answer", "text": "macOS keeps Voice Memos' recordings in a protected folder no other app can read without it. Memo Export's App Sandbox still limits it to that folder, read-only, plus the export folder you choose." }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --gap: clamp(12px, 4.5vmin, 72px);
+      --inset: clamp(6px, 1.1vmin, 12px);
+      --radius: clamp(22px, 3.4vmin, 38px);
+      --ice: #9ed1ff;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #0d0f12;
+      color: #fff;
+      font: 16px/1.5 var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 6px; }
+
+    /* Cool silver light behind the glass, with a faint lattice. */
+    .scene {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(40% 36% at 16% 20%, rgba(214, 226, 242, 0.62), transparent 70%),
+        radial-gradient(36% 34% at 86% 24%, rgba(150, 174, 206, 0.52), transparent 72%),
+        radial-gradient(44% 40% at 70% 88%, rgba(190, 206, 228, 0.46), transparent 70%),
+        radial-gradient(30% 28% at 24% 84%, rgba(112, 134, 166, 0.42), transparent 70%),
+        linear-gradient(180deg, #141820, #0d0f12);
+    }
+    .scene::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 56px 56px;
+      -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 78%);
+      mask-image: radial-gradient(ellipse at center, #000 20%, transparent 78%);
+    }
+
+    .glass {
+      position: fixed;
+      inset: var(--gap);
+      border-radius: var(--radius);
+      background: rgba(16, 19, 24, 0.46);
+      -webkit-backdrop-filter: blur(28px) saturate(140%);
+      backdrop-filter: blur(28px) saturate(140%);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .edge {
+      position: absolute;
+      inset: var(--inset);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: calc(var(--radius) - var(--inset));
+      pointer-events: none;
+    }
+    .content {
+      position: absolute;
+      inset: var(--inset);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: clamp(16px, 3vmin, 30px) clamp(18px, 4vmin, 40px);
+      scrollbar-width: thin;
+    }
+
+    .label {
+      font: 12px/1.4 var(--mono);
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.55);
+      text-decoration: none;
+    }
+    a.label:hover { color: #fff; }
+    .bar { display: flex; justify-content: space-between; gap: 12px; }
+    @media (max-width: 400px) {
+      .bar .new { display: none; }
+    }
+
+    .center {
+      min-height: calc(100% - 40px);
+      padding: clamp(10px, 3vh, 28px) 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .title { display: flex; flex-direction: column; align-items: center; margin-bottom: 8px; }
+    .icon { width: clamp(56px, 9vh, 76px); height: auto; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45)); }
+    h1 {
+      margin: clamp(10px, 2vh, 18px) 0 0;
+      font-size: clamp(36px, min(6.6vw, 8.4vh), 70px);
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.035em;
+    }
+    .lede { margin: 0 0 clamp(16px, 3.4vh, 28px); max-width: 34em; font-size: clamp(17px, 2.2vw, 20px); color: rgba(255, 255, 255, 0.72); }
+
+    /* A looping demo: export from the menu bar, the notes appear, and one opens with its
+       transcript. Without JavaScript, or with reduced motion, it shows the finished scene. */
+    .demo { margin-bottom: clamp(18px, 3.6vh, 30px); }
+    .desk {
+      position: relative;
+      width: min(480px, 84vw);
+      aspect-ratio: 16 / 10;
+      max-height: 34vh;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      background:
+        radial-gradient(60% 60% at 20% 30%, rgba(214, 226, 242, 0.22), transparent 70%),
+        radial-gradient(50% 50% at 85% 80%, rgba(150, 174, 206, 0.2), transparent 70%),
+        rgba(255, 255, 255, 0.04);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+      text-align: left;
+      font-size: clamp(9px, 1.5vmin, 12px);
+    }
+    .menubar {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 18px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 9px;
+      padding: 0 10px;
+      background: rgba(0, 0, 0, 0.35);
+    }
+    .menubar i { width: 10px; height: 6px; border-radius: 2px; background: rgba(255, 255, 255, 0.35); }
+    .menubar svg { width: 13px; height: 13px; overflow: visible; }
+    .win {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 9px;
+      background: #262a31;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+      padding: 24px 10px 10px;
+      line-height: 1.6;
+    }
+    .win::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 9px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ff5f57;
+      box-shadow: 11px 0 #febc2e, 22px 0 #28c840;
+    }
+    .notes { left: 4%; top: 13%; width: 70%; height: 82%; display: flex; gap: 8px; padding-top: 22px; overflow: hidden; }
+    .notes .side { flex: 0 0 38%; border-radius: 6px; background: rgba(255, 255, 255, 0.05); padding: 6px; overflow: hidden; }
+    .notes .side b { display: block; color: var(--ice); font-weight: 600; margin-bottom: 3px; }
+    /* Newest at the top, so each file the export writes lands above the last one. */
+    .notes .file { display: none; padding: 2px 4px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notes .file.shown { display: block; animation: land 0.25s ease-out; }
+    @keyframes land {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: none; }
+    }
+    .notes .file small { display: block; opacity: 0.5; font-size: 0.85em; }
+    .notes .file.open { background: rgba(47, 111, 224, 0.4); }
+    .notes .note { flex: 1; min-width: 0; opacity: 0; transition: opacity 0.25s; line-height: 1.45; }
+    .is-note .notes .note { opacity: 1; }
+    .notes .note h3 { margin: 0 0 1px; font-size: 1.1em; }
+    .notes .note .when { display: block; opacity: 0.5; font-size: 0.85em; margin-bottom: 5px; }
+    .notes .note .player { height: 1.3em; border-radius: 1em; background: rgba(255, 255, 255, 0.08); margin-bottom: 6px; }
+    .notes .note p { margin: 0 0 5px; color: rgba(255, 255, 255, 0.82); }
+    .notes .note p b { font-family: var(--mono); color: var(--ice); margin-right: 4px; }
+    .menu {
+      position: absolute;
+      right: 8px;
+      top: 22px;
+      width: 50%;
+      padding: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 9px;
+      background: #2b2d34;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 0.15s, transform 0.2s;
+    }
+    .is-open .menu { opacity: 1; transform: none; }
+    .menu .muted { color: rgba(255, 255, 255, 0.45); padding: 2px 6px; }
+    .menu .row { padding: 3px 6px; border-radius: 6px; }
+    .menu .row.go { background: #2f6fe0; }
+    @media (prefers-reduced-motion: reduce) {
+      .demo *, .demo *::before, .demo *::after { transition: none !important; }
+    }
+
+    .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 16px; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 22px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .button:hover { border-color: rgba(255, 255, 255, 0.6); }
+    .button .star { width: 15px; height: 15px; fill: #fff; }
+    .button.solid { border-color: #fff; background: #fff; color: #0d0f12; }
+    .button.solid:hover { background: rgba(255, 255, 255, 0.86); }
+
+    .thanks { margin: 0 0 14px; font-size: 14px; color: rgba(255, 255, 255, 0.75); animation: drop 0.4s ease-out both; }
+    @keyframes drop {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* What a note holds, then questions people search for, below the fold. */
+    .section {
+      width: min(720px, 100%);
+      margin: clamp(20px, 5vh, 48px) auto clamp(8px, 2vh, 16px);
+      display: grid;
+      gap: 10px;
+    }
+    .section h2 { margin: 0 0 6px; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; text-align: center; }
+    .shot { width: 100%; height: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35); }
+    .verdicts { display: grid; gap: 8px; margin: 6px 0 0; padding: 0; list-style: none; }
+    .verdicts li {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 10px 16px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 15px;
+    }
+    .verdicts b { color: #fff; }
+    .verdicts .key b { color: var(--ice); }
+    .section details {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 12px 16px;
+    }
+    .section summary { cursor: pointer; font-weight: 600; }
+    .section details p { margin: 8px 0 0; color: rgba(255, 255, 255, 0.72); font-size: 15px; }
+    .sample {
+      margin: 0;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.28);
+      font: 13px/1.55 var(--mono);
+      color: rgba(255, 255, 255, 0.78);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .sample .dim { color: rgba(255, 255, 255, 0.42); }
+    .sample .time { color: var(--ice); }
+    .verdicts code, .section details code { font: 0.92em var(--mono); color: #fff; }
+
+    .foot { display: grid; gap: 4px; margin-top: clamp(16px, 3vh, 28px); text-align: center; }
+    .foot p { margin: 0; font: 11px/1.6 var(--mono); letter-spacing: 0.03em; color: rgba(255, 255, 255, 0.4); }
+    .foot a { color: rgba(255, 255, 255, 0.7); }
+
+    /* On shorter screens the icon moves beside the name, so the top section still fits. */
+    @media (max-height: 760px), (max-width: 480px) {
+      .title { flex-direction: row; gap: clamp(10px, 1.6vh, 16px); margin-top: clamp(4px, 1vh, 10px); }
+      .icon { width: clamp(36px, min(6.4vw, 7.6vh), 58px); }
+      h1 { margin: 0; }
+    }
+  </style></head>
+<body>
+  <div class="scene" aria-hidden="true"></div>
+
+  <main class="glass">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="content">
+      <nav class="bar" aria-label="Site">
+        <a class="label" href="https://github.com/stanczykwyatt/memo-export/releases/tag/v0.1.0">memo export · v0.1<span class="new"> · what's new</span></a>
+        <a class="label" href="https://github.com/stanczykwyatt/memo-export">github ↗</a>
+      </nav>
+
+      <section class="center">
+        <div class="title">
+          <img class="icon" src="icon.png" alt="" width="76" height="76">
+          <h1>Memo Export</h1>
+        </div>
+        <p class="lede">Every Voice Memos recording as Markdown with its audio, the transcript in paragraphs with timestamps. Ready for Obsidian, and only new memos each time.</p>
+
+        <div class="demo is-open is-note" role="img" aria-label="Demo: from the Memo Export menu bar icon, Export 5 New Memos is chosen. Five notes appear in a notes app, and the newest, a lecture on synaptic plasticity, opens with an audio player and its transcript in timestamped paragraphs.">
+          <div class="desk" aria-hidden="true">
+            <div class="menubar">
+              <svg viewBox="0 0 20 16">
+                <rect x="1.5" y="5.5" width="1.7" height="5" rx="0.85" fill="#fff"/>
+                <rect x="4.1" y="3" width="1.7" height="10" rx="0.85" fill="#fff"/>
+                <rect x="6.7" y="4.5" width="1.7" height="7" rx="0.85" fill="#fff"/>
+                <rect x="9.3" y="6.25" width="1.7" height="3.5" rx="0.85" fill="#fff"/>
+                <rect x="12.4" y="4" width="6.5" height="1.6" rx="0.8" fill="#fff"/>
+                <rect x="12.4" y="7.2" width="5" height="1.6" rx="0.8" fill="#fff"/>
+                <rect x="12.4" y="10.4" width="6.5" height="1.6" rx="0.8" fill="#fff"/>
+              </svg>
+              <i></i><i></i><i></i>
+            </div>
+            <div class="win notes">
+              <div class="side">
+                <b>Voice Memos</b>
+                <span class="file shown open">Lecture: synaptic plasticity<small>04-30 · 18:42 · .md .m4a</small></span>
+                <span class="file shown">Lab meeting<small>04-29 · 32:10 · .md .m4a</small></span>
+                <span class="file shown">Grocery idea<small>04-29 · 0:12 · .md .m4a</small></span>
+                <span class="file shown">Melody for the bridge<small>04-28 · 0:41 · .md .m4a</small></span>
+                <span class="file shown">Interview practice<small>04-27 · 6:05 · .md .m4a</small></span>
+              </div>
+              <div class="note">
+                <h3>Lecture: synaptic plasticity</h3>
+                <span class="when">April 30, 2026 · 18:42 · Neuroscience</span>
+                <div class="player"></div>
+                <p><b>0:00</b>Okay, let's pick up where we left off. Today is all about synaptic plasticity.</p>
+                <p><b>0:16</b>The classic example is long-term potentiation in the hippocampus.</p>
+              </div>
+            </div>
+            <div class="menu">
+              <div class="muted">6 memos · 4 with transcripts</div>
+              <div class="row go">Export 5 New Memos</div>
+              <div class="row">Export Folder: ~/Vault/Voice Memos</div>
+              <div class="row">Open Memo Export…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a class="button solid" href="https://github.com/stanczykwyatt/memo-export/releases/latest/download/Memo-Export.zip">Download for Mac</a>
+          <a class="button" href="https://github.com/stanczykwyatt/memo-export">
+            <svg class="star" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.4l1.95 4.02 4.43.6-3.23 3.08.79 4.4L8 11.38 4.06 13.5l.79-4.4L1.62 6.02l4.43-.6z"/></svg>
+            Star on GitHub
+          </a>
+        </div>
+        <p class="thanks" id="thanks" hidden>Thanks for downloading! If it saves you some copying, a <a href="https://github.com/stanczykwyatt/memo-export">star on GitHub</a> helps other people find it.</p>
+        <p class="label">free · open source · macos 14+ · read-only · no internet access</p>
+      </section>
+
+      <section class="section" aria-labelledby="what-title">
+        <h2 id="what-title">What you get</h2>
+        <img class="shot" src="screenshot-dark.png" width="980" height="620" alt="The Memo Export window: six memos on the left with their dates, lengths and folders, and a lecture's transcript on the right in timestamped paragraphs, with Copy Transcript and Copy with Times buttons." loading="lazy">
+        <ul class="verdicts">
+          <li class="key"><b>A note for every memo</b>: title, date, length and folder, then the whole transcript in paragraphs, each starting with when it was said.</li>
+          <li><b>The audio next to it</b>: the original <code>.m4a</code>, dated when you recorded it, and embedded so Obsidian plays it inside the note.</li>
+          <li class="key"><b>Only what's new</b>: each run adds new memos and fills in transcripts that weren't ready, without touching notes you've edited.</li>
+          <li><b>Search what was said</b> across every memo, and copy any transcript with its paragraphs, which copying from Voice Memos loses.</li>
+          <li><b>Extras</b>: SRT subtitles, subfolders matching your Voice Memos folders, automatic export, and a <code>memo-export</code> command line tool.</li>
+        </ul>
+      </section>
+
+      <section class="section" aria-labelledby="note-title">
+        <h2 id="note-title">What a note looks like</h2>
+<pre class="sample"><span class="dim">---
+title: "Lecture: synaptic plasticity"
+date: 2026-04-30T09:41:00-05:00
+duration: "18:42"
+folder: "Neuroscience"
+tags:
+  - voice-memo
+---</span>
+
+# Lecture: synaptic plasticity
+
+![[2026-04-30 Lecture synaptic plasticity.m4a]]
+
+<span class="time">**0:00**</span> Okay, let's pick up where we left off on Tuesday. Today is all about synaptic plasticity…
+
+<span class="time">**0:16**</span> The classic example is long-term potentiation in the hippocampus…</pre>
+      </section>
+
+      <section class="section" aria-labelledby="faq-title">
+        <h2 id="faq-title">Questions</h2>
+        <details>
+          <summary>How do I export a transcript from Voice Memos?</summary>
+          <p>Voice Memos only lets you copy a transcript one memo at a time, and the line breaks don't come with it. Memo Export exports all of them at once, each as a Markdown note in paragraphs with timestamps, next to the audio.</p>
+        </details>
+        <details>
+          <summary>Can I send them to Obsidian?</summary>
+          <p>Yes. Choose a folder inside your vault. Each note has front matter Obsidian reads as properties, a <code>voice-memo</code> tag, and an embed that plays the audio inside the note. Prefer another app? Switch to standard Markdown links.</p>
+        </details>
+        <details>
+          <summary>Does it transcribe memos itself?</summary>
+          <p>No. It exports the transcripts Voice Memos makes on your Mac, so your audio never goes anywhere. A memo without a transcript is still exported, and its note gets the words once Voice Memos has made them.</p>
+        </details>
+        <details>
+          <summary>Why does it need Full Disk Access?</summary>
+          <p>macOS keeps Voice Memos' recordings in a protected folder no other app can read without it. Memo Export's App Sandbox still limits it to that one folder, read-only, plus the export folder you choose. <a href="https://github.com/stanczykwyatt/memo-export/blob/main/SECURITY.md">The details are in SECURITY.md</a>.</p>
+        </details>
+        <details>
+          <summary>Will it change or delete my memos?</summary>
+          <p>No. It can only read Voice Memos, and it reads a copy of its database rather than the database itself. It never deletes anything, and never overwrites a note you've edited.</p>
+        </details>
+      </section>
+
+      <footer class="foot">
+        <p>Also free: <a href="https://stanczykwyatt.github.io/show-desktop/">Show Desktop</a>, <a href="https://stanczykwyatt.github.io/copy-2fa/">Copy 2FA</a>, <a href="https://stanczykwyatt.github.io/who-stole-my-focus/">Who Stole My Focus</a> and <a href="https://stanczykwyatt.github.io/ai-footprint/">AI Footprint</a>.</p>
+        <p>Memo Export collects no data, and this site has no cookies or tracking. MIT License. Not affiliated with Apple or Obsidian; their names belong to their owners. The memos in the demo are made up.</p>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    // After a download, ask for a star, which is when people are most glad to give one.
+    document.querySelector(".button.solid").addEventListener("click", () => {
+      document.getElementById("thanks").hidden = false;
+    });
+
+    // Plays the demo on a loop. The page starts on the finished scene, so it still makes sense
+    // without JavaScript or with reduced motion.
+    const demo = document.querySelector(".demo");
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const files = [...demo.querySelectorAll(".file")].reverse();
+      const open = demo.querySelector(".file.open");
+      let timer;
+
+      const wait = (ms) => new Promise((done) => { timer = setTimeout(done, ms); });
+
+      async function play() {
+        demo.classList.remove("is-open", "is-note");
+        files.forEach((file) => file.classList.remove("shown"));
+        open.classList.remove("open");
+        await wait(900);
+        demo.classList.add("is-open");
+        await wait(1500);
+        demo.classList.remove("is-open");
+        for (const file of files) { await wait(280); file.classList.add("shown"); }
+        await wait(700);
+        open.classList.add("open");
+        demo.classList.add("is-note");
+        await wait(4200);
+        play();
+      }
+
+      // Starts over when the tab comes back, rather than catching up on missed steps.
+      document.addEventListener("visibilitychange", () => {
+        clearTimeout(timer);
+        if (!document.hidden) play();
+      });
+      play();
+    }
+  </script>
+</body>
+</html>

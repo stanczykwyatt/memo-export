@@ -1,0 +1,29 @@
+name: Bug report
+description: Something isn't working, or a memo or transcript came out wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What were you doing, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Describe the memo rather than attaching it, like "a 40-minute memo in French with long pauses". Please don't paste a transcript or anything else you'd rather keep private.
+  - type: input
+    id: version
+    attributes:
+      label: Memo Export version
+      description: Menu bar icon → About Memo Export, or `memo-export --version`.
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+    validations:
+      required: true

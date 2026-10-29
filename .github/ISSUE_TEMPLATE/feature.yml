@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest an idea, or a change to the note format.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would it help you do?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How do you picture it working?
+  - type: textarea
+    id: app
+    attributes:
+      label: Where do your notes go?
+      description: The notes app you export into, if it matters for this, like Obsidian, Logseq or Bear.

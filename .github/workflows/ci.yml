@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Run tests
+        run: swift test
+
+      - name: Build the app
+        run: scripts/build-app.sh
+
+      - name: Check the app has only the sandbox, Voice Memos read-only and your folder
+        run: |
+          entitlements="$(codesign -d --entitlements - --xml "build/Memo Export.app" 2>/dev/null)"
+          if ! grep -q "com.apple.security.app-sandbox" <<< "$entitlements"; then
+            echo "::error::Memo Export must run in the App Sandbox."
+            exit 1
+          fi
+          others="$(grep -o "<key>[^<]*</key>" <<< "$entitlements" | sed -E 's#</?key>##g' | grep -v \
+            -e "^com.apple.security.app-sandbox$" \
+            -e "^com.apple.security.temporary-exception.files.home-relative-path.read-only$" \
+            -e "^com.apple.security.files.user-selected.read-write$" \
+            -e "^com.apple.security.files.bookmarks.app-scope$" || true)"
+          if [ -n "$others" ]; then
+            echo "$others"
+            echo "::error::Memo Export must have no entitlements besides the App Sandbox, the read-only Voice Memos folder and the folder you choose."
+            exit 1
+          fi
+          folders="$(grep -o "<string>[^<]*</string>" <<< "$entitlements")"
+          if [ "$folders" != "<string>/Library/Group Containers/group.com.apple.VoiceMemos.shared/Recordings/</string>" ]; then
+            echo "$folders"
+            echo "::error::The only read-only folder must be the Voice Memos library."
+            exit 1
+          fi
+          echo "Sandboxed, with Voice Memos read-only, the folder you choose, and nothing else."
+
+      - name: Check the app never uses the network, other apps, input or the screen
+        run: |
+          pattern='URLSession|NWConnection|CFSocket|NSWorkspace[^)]*\.open\(|openURL|openApplication|LSOpen|Process\(\)|posix_spawn|NSTask|CGEvent(Tap|PostToPid)|tapCreate|AXIsProcessTrusted|AXUIElement|CGWindowListCreateImage|SCShareableContent|NSAppleScript|NSEvent\.addGlobalMonitor'
+          # The one page it opens is the Full Disk Access page in System Settings.
+          found="$(grep -rnE "$pattern" Sources | grep -v 'NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!)' || true)"
+          if [ -n "$found" ]; then
+            echo "$found"
+            echo "::error::Memo Export must not use the network, open URLs, start programs, control other apps, or read input or the screen."
+            exit 1
+          fi
+          echo "No networking, URL opening besides Privacy settings, child processes, Apple Events, event taps, Accessibility or screen capture."
+
+      - name: Check nothing is ever deleted
+        run: |
+          pattern='removeItem|trashItem|recycle\(|unlink\(|rmdir\(|ftruncate|truncate\(|replaceItem|\bkill\('
+          if grep -rnE "$pattern" Sources; then
+            echo "::error::Memo Export must never delete, replace or truncate a file."
+            exit 1
+          fi
+          echo "Nothing is deleted."
+
+      - name: Check only the library reader, the exporter and the lock touch files
+        run: |
+          reads='Data\(contentsOf|contents\(atPath|String\(contentsOf|FileHandle|fopen\(|\bopen\(|mmap\(|sqlite3_open'
+          writes='\.write\(to:|createFile|copyItem|moveItem|linkItem|createDirectory|setAttributes|createSymbolicLink'
+          allowed=(-e "^Sources/MemoCore/Library.swift:" -e "^Sources/MemoCore/Exporter.swift:" -e "^Sources/MemoCore/Lock.swift:")
+          # NSWorkspace's open( is the Privacy settings page, checked above.
+          found="$(grep -rnE "$reads|$writes" Sources | grep -v "${allowed[@]}" | grep -v 'NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:' || true)"
+          if [ -n "$found" ]; then
+            echo "$found"
+            echo "::error::Only Library.swift may read Voice Memos, and only Exporter.swift, Library.swift's scratch copy and Lock.swift's lock files may write."
+            exit 1
+          fi
+          echo "Files are only read by Library.swift and written by Exporter.swift, Library.swift's scratch copy and Lock.swift."
