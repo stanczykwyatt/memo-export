@@ -56,38 +56,53 @@
   }
   </script>
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How do I export a transcript from Voice Memos on a Mac?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Voice Memos only lets you copy a transcript one memo at a time, without its line breaks. Memo Export exports all of them at once, each as a Markdown note in paragraphs with timestamps, next to the audio." }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I export Voice Memos transcripts to Obsidian?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Choose a folder inside your vault. Each note has front matter Obsidian reads as properties, a voice-memo tag, and an embed that plays the audio inside the note." }
-      },
-      {
-        "@type": "Question",
-        "name": "Does Memo Export transcribe recordings itself?",
-        "acceptedAnswer": { "@type": "Answer", "text": "No. It exports the transcripts Voice Memos makes on your Mac, which needs macOS 14 Sonoma or later. A memo without one is still exported with its audio, and its note gets the words once Voice Memos has made them." }
-      },
-      {
-        "@type": "Question",
-        "name": "Will Memo Export change or delete my memos?",
-        "acceptedAnswer": { "@type": "Answer", "text": "No. The App Sandbox only lets it read Voice Memos' folder, and it reads a copy of the database rather than the database itself. It never deletes anything, and never overwrites a note you've edited." }
-      },
-      {
-        "@type": "Question",
-        "name": "Why does Memo Export need Full Disk Access?",
-        "acceptedAnswer": { "@type": "Answer", "text": "macOS keeps Voice Memos' recordings in a protected folder no other app can read without it. Memo Export's App Sandbox still limits it to that folder, read-only, plus the export folder you choose." }
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I export a transcript from Voice Memos?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Voice Memos only lets you copy a transcript one memo at a time, and the line breaks don't come with it. Memo Export exports all of them at once, each as a Markdown note in paragraphs with timestamps, next to the audio."
       }
-    ]
-  }
-  </script>
+    },
+    {
+      "@type": "Question",
+      "name": "Can I send them to Obsidian?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Choose a folder inside your vault. Each note has front matter Obsidian reads as properties, a voice-memo tag, and an embed that plays the audio inside the note. Prefer another app? Switch to standard Markdown links."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it transcribe memos itself?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. It exports the transcripts Voice Memos makes on your Mac, so your audio never goes anywhere. A memo without a transcript is still exported, and its note gets the words once Voice Memos has made them."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does it need Full Disk Access?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "macOS keeps Voice Memos' recordings in a protected folder no other app can read without it. Memo Export's App Sandbox still limits it to that one folder, read-only, plus the export folder you choose. The details are in SECURITY.md."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Will it change or delete my memos?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. It can only read Voice Memos, and it reads a copy of its database rather than the database itself. It never deletes anything, and never overwrites a note you've edited."
+      }
+    }
+  ]
+}
+</script>
 
   <style>
     :root {
