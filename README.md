@@ -92,6 +92,8 @@ Files are named with the date first, so they sort in the order you recorded them
 
 ## Install
 
+> **Tested so far:** the export code has been run against a real Voice Memos library from the command line tool and from a sandboxed test build with the app's exact permissions. The signed app itself hasn't been tried with Full Disk Access turned on yet. If something doesn't work, please [open an issue](https://github.com/stanczykwyatt/memo-export/issues).
+
 1. [Download **Memo-Export.zip**](https://github.com/stanczykwyatt/memo-export/releases/latest/download/Memo-Export.zip) and unzip it.
 2. Move **Memo Export** to your Applications folder and open it.
 3. Turn on Full Disk Access when it asks: **System Settings → Privacy & Security → Full Disk Access**, then switch on Memo Export. The window has a button that opens the right page.
